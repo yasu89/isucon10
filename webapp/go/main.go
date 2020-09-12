@@ -200,23 +200,25 @@ func (r *RecordMapper) Err() error {
 	return r.err
 }
 
+// chair は No.2
 func NewMySQLConnectionEnvChair() *MySQLConnectionEnv {
 	return &MySQLConnectionEnv{
-		Host:     getEnv("MYSQL_HOST", "10.163.54.102"),
-		Port:     getEnv("MYSQL_PORT", "3306"),
-		User:     getEnv("MYSQL_USER", "isucon"),
-		DBName:   getEnv("MYSQL_DBNAME", "isuumo"),
-		Password: getEnv("MYSQL_PASS", "isucon"),
+		Host:     "10.163.54.102",
+		Port:     "3306",
+		User:     "isucon",
+		DBName:   "isuumo",
+		Password: "isucon",
 	}
 }
 
+// estate は No.3
 func NewMySQLConnectionEnvEstate() *MySQLConnectionEnv {
 	return &MySQLConnectionEnv{
-		Host:     getEnv("MYSQL_HOST", "10.163.54.103"),
-		Port:     getEnv("MYSQL_PORT", "3306"),
-		User:     getEnv("MYSQL_USER", "isucon"),
-		DBName:   getEnv("MYSQL_DBNAME", "isuumo"),
-		Password: getEnv("MYSQL_PASS", "isucon"),
+		Host:     "10.163.54.103",
+		Port:     "3306",
+		User:     "isucon",
+		DBName:   "isuumo",
+		Password: "isucon",
 	}
 }
 
