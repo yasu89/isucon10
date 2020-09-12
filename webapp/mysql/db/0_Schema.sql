@@ -41,5 +41,6 @@ CREATE TABLE isuumo.chair
     stock       INTEGER         NOT NULL,
     INDEX (popularity, id),
     INDEX (price, id),
+    INDEX (height, width, depth),
     INDEX (stock)
 );
