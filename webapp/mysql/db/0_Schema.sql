@@ -49,4 +49,4 @@ CREATE TABLE isuumo.color
 (
     id  TINYINT NOT NULL PRIMARY KEY,
     color VARCHAR(64)   NOT NULL
-)
+);
