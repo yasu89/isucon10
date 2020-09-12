@@ -23,6 +23,8 @@ import (
 const Limit = 20
 const NazotteLimit = 50
 
+const ColorJoin = " INNER JOIN color ON chair.color_id = color.id"
+
 var dbEstate *sqlx.DB
 var dbChair *sqlx.DB
 var mySQLConnectionDataEstate *MySQLConnectionEnv
@@ -315,6 +317,7 @@ func initialize(c echo.Context) error {
 	chairPaths := []string{
 		filepath.Join(sqlDir, "0_Schema.sql"),
 		filepath.Join(sqlDir, "2_DummyChairData.sql"),
+		filepath.Join(sqlDir, "3_initColor.sql"),
 	}
 	estatePaths := []string{
 		filepath.Join(sqlDir, "0_Schema.sql"),
@@ -366,7 +369,7 @@ func getChairDetail(c echo.Context) error {
 	}
 
 	chair := Chair{}
-	query := `SELECT * FROM chair WHERE id = ?`
+	query := `SELECT * FROM chair WHERE id = ?` + ColorJoin
 	err = dbChair.Get(&chair, query, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -561,7 +564,7 @@ func searchChairs(c echo.Context) error {
 
 	chairs := []Chair{}
 	params = append(params, perPage, page*perPage)
-	err = dbChair.Select(&chairs, searchQuery+searchCondition+limitOffset, params...)
+	err = dbChair.Select(&chairs, searchQuery+searchCondition+ColorJoin+limitOffset, params...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return c.JSON(http.StatusOK, ChairSearchResponse{Count: 0, Chairs: []Chair{}})
@@ -633,7 +636,7 @@ func getChairSearchCondition(c echo.Context) error {
 
 func getLowPricedChair(c echo.Context) error {
 	var chairs []Chair
-	query := `SELECT * FROM chair WHERE stock > 0 ORDER BY price ASC, id ASC LIMIT ?`
+	query := `SELECT * FROM chair WHERE stock > 0 ORDER BY price ASC, id ASC LIMIT ?`+ColorJoin
 	err := dbChair.Select(&chairs, query, Limit)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -867,7 +870,7 @@ func searchRecommendedEstateWithChair(c echo.Context) error {
 	}
 
 	chair := Chair{}
-	query := `SELECT * FROM chair WHERE id = ?`
+	query := `SELECT * FROM chair WHERE id = ?`+ColorJoin
 	err = dbChair.Get(&chair, query, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
