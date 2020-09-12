@@ -37,10 +37,10 @@ type Chair struct {
 	Name        string `db:"name" json:"name"`
 	Description string `db:"description" json:"description"`
 	Thumbnail   string `db:"thumbnail" json:"thumbnail"`
-	Price       uint32  `db:"price" json:"price"`
-	Height      uint16  `db:"height" json:"height"`
-	Width       uint16  `db:"width" json:"width"`
-	Depth       uint16  `db:"depth" json:"depth"`
+	Price       int  `db:"price" json:"price"`
+	Height      int  `db:"height" json:"height"`
+	Width       int  `db:"width" json:"width"`
+	Depth       int  `db:"depth" json:"depth"`
 	Color       string `db:"color" json:"color"`
 	Features    string `db:"features" json:"features"`
 	Kind        string `db:"kind" json:"kind"`
@@ -67,8 +67,8 @@ type Estate struct {
 	Longitude   float64 `db:"longitude" json:"longitude"`
 	Address     string  `db:"address" json:"address"`
 	Rent        int32   `db:"rent" json:"rent"`
-	DoorHeight  uint16   `db:"door_height" json:"doorHeight"`
-	DoorWidth   uint16   `db:"door_width" json:"doorWidth"`
+	DoorHeight  int   `db:"door_height" json:"doorHeight"`
+	DoorWidth   int   `db:"door_width" json:"doorWidth"`
 	Features    string  `db:"features" json:"features"`
 	Popularity  int32   `db:"popularity" json:"-"`
 }
@@ -338,6 +338,18 @@ func getChairDetail(c echo.Context) error {
 	return c.JSON(http.StatusOK, chair)
 }
 
+func convertChairHeightWidthDepthId(value int) int {
+	if value < 80 {
+		return 0
+	} else if value < 110 {
+		return 1
+	} else if value < 150 {
+		return 2
+	} else {
+		return 3
+	}
+} 
+
 func postChair(c echo.Context) error {
 	header, err := c.FormFile("chairs")
 	if err != nil {
@@ -369,9 +381,25 @@ func postChair(c echo.Context) error {
 		description := rm.NextString()
 		thumbnail := rm.NextString()
 		price := rm.NextInt()
+		if price < 3000 {
+			price = 0
+		} else if price < 6000 {
+			price = 1
+		} else if price < 9000 {
+			price = 2
+		} else if price < 12000 {
+			price = 3
+		} else if price < 15000 {
+			price = 4
+		} else {
+			price = 5
+		}
 		height := rm.NextInt()
+		height = convertChairHeightWidthDepthId(height)
 		width := rm.NextInt()
+		width = convertChairHeightWidthDepthId(width)
 		depth := rm.NextInt()
+		depth = convertChairHeightWidthDepthId(depth)
 		color := rm.NextString()
 		features := rm.NextString()
 		kind := rm.NextString()
@@ -399,71 +427,83 @@ func searchChairs(c echo.Context) error {
 	params := make([]interface{}, 0)
 
 	if c.QueryParam("priceRangeId") != "" {
-		chairPrice, err := getRange(chairSearchCondition.Price, c.QueryParam("priceRangeId"))
+		_, err := getRange(chairSearchCondition.Price, c.QueryParam("priceRangeId"))
 		if err != nil {
 			c.Echo().Logger.Infof("priceRangeID invalid, %v : %v", c.QueryParam("priceRangeId"), err)
 			return c.NoContent(http.StatusBadRequest)
 		}
+		conditions = append(conditions, "price = ?")
+		rangeId, _ := strconv.Atoi(c.QueryParam("priceRangeId"))
+		params = append(params, rangeId)
 
-		if chairPrice.Min != -1 {
-			conditions = append(conditions, "price >= ?")
-			params = append(params, chairPrice.Min)
-		}
-		if chairPrice.Max != -1 {
-			conditions = append(conditions, "price < ?")
-			params = append(params, chairPrice.Max)
-		}
+		// if chairPrice.Min != -1 {
+		// 	conditions = append(conditions, "price >= ?")
+		// 	params = append(params, chairPrice.Min)
+		// }
+		// if chairPrice.Max != -1 {
+		// 	conditions = append(conditions, "price < ?")
+		// 	params = append(params, chairPrice.Max)
+		// }
 	}
 
 	if c.QueryParam("heightRangeId") != "" {
-		chairHeight, err := getRange(chairSearchCondition.Height, c.QueryParam("heightRangeId"))
+		_, err := getRange(chairSearchCondition.Height, c.QueryParam("heightRangeId"))
 		if err != nil {
 			c.Echo().Logger.Infof("heightRangeIf invalid, %v : %v", c.QueryParam("heightRangeId"), err)
 			return c.NoContent(http.StatusBadRequest)
 		}
+		conditions = append(conditions, "height = ?")
+		rangeId, _ := strconv.Atoi(c.QueryParam("heightRangeId"))
+		params = append(params, rangeId)
 
-		if chairHeight.Min != -1 {
-			conditions = append(conditions, "height >= ?")
-			params = append(params, chairHeight.Min)
-		}
-		if chairHeight.Max != -1 {
-			conditions = append(conditions, "height < ?")
-			params = append(params, chairHeight.Max)
-		}
+		// if chairHeight.Min != -1 {
+		// 	conditions = append(conditions, "height >= ?")
+		// 	params = append(params, chairHeight.Min)
+		// }
+		// if chairHeight.Max != -1 {
+		// 	conditions = append(conditions, "height < ?")
+		// 	params = append(params, chairHeight.Max)
+		// }
 	}
 
 	if c.QueryParam("widthRangeId") != "" {
-		chairWidth, err := getRange(chairSearchCondition.Width, c.QueryParam("widthRangeId"))
+		_, err := getRange(chairSearchCondition.Width, c.QueryParam("widthRangeId"))
 		if err != nil {
 			c.Echo().Logger.Infof("widthRangeID invalid, %v : %v", c.QueryParam("widthRangeId"), err)
 			return c.NoContent(http.StatusBadRequest)
 		}
+		conditions = append(conditions, "width = ?")
+		rangeId, _ := strconv.Atoi(c.QueryParam("widthRangeId"))
+		params = append(params, rangeId)
 
-		if chairWidth.Min != -1 {
-			conditions = append(conditions, "width >= ?")
-			params = append(params, chairWidth.Min)
-		}
-		if chairWidth.Max != -1 {
-			conditions = append(conditions, "width < ?")
-			params = append(params, chairWidth.Max)
-		}
+		// if chairWidth.Min != -1 {
+		// 	conditions = append(conditions, "width >= ?")
+		// 	params = append(params, chairWidth.Min)
+		// }
+		// if chairWidth.Max != -1 {
+		// 	conditions = append(conditions, "width < ?")
+		// 	params = append(params, chairWidth.Max)
+		// }
 	}
 
 	if c.QueryParam("depthRangeId") != "" {
-		chairDepth, err := getRange(chairSearchCondition.Depth, c.QueryParam("depthRangeId"))
+		_, err := getRange(chairSearchCondition.Depth, c.QueryParam("depthRangeId"))
 		if err != nil {
 			c.Echo().Logger.Infof("depthRangeId invalid, %v : %v", c.QueryParam("depthRangeId"), err)
 			return c.NoContent(http.StatusBadRequest)
 		}
+		conditions = append(conditions, "depth = ?")
+		rangeId, _ := strconv.Atoi(c.QueryParam("depthRangeId"))
+		params = append(params, rangeId)
 
-		if chairDepth.Min != -1 {
-			conditions = append(conditions, "depth >= ?")
-			params = append(params, chairDepth.Min)
-		}
-		if chairDepth.Max != -1 {
-			conditions = append(conditions, "depth < ?")
-			params = append(params, chairDepth.Max)
-		}
+		// if chairDepth.Min != -1 {
+		// 	conditions = append(conditions, "depth >= ?")
+		// 	params = append(params, chairDepth.Min)
+		// }
+		// if chairDepth.Max != -1 {
+		// 	conditions = append(conditions, "depth < ?")
+		// 	params = append(params, chairDepth.Max)
+		// }
 	}
 
 	if c.QueryParam("kind") != "" {
@@ -636,6 +676,18 @@ func getRange(cond RangeCondition, rangeID string) (*Range, error) {
 	return cond.Ranges[RangeIndex], nil
 }
 
+func convertEstateHeightWidthId(value int) int {
+	if value < 80 {
+		return 0
+	} else if value < 110 {
+		return 1
+	} else if value < 150 {
+		return 2
+	} else {
+		return 3
+	}
+}
+
 func postEstate(c echo.Context) error {
 	header, err := c.FormFile("estates")
 	if err != nil {
@@ -670,8 +722,19 @@ func postEstate(c echo.Context) error {
 		latitude := rm.NextFloat()
 		longitude := rm.NextFloat()
 		rent := rm.NextInt()
+		if rent < 50000 {
+			rent = 0
+		} else if rent < 100000 {
+			rent = 1
+		} else if rent < 150000 {
+			rent = 2
+		} else {
+			rent = 3
+		}
 		doorHeight := rm.NextInt()
+		doorHeight = convertEstateHeightWidthId(doorHeight)
 		doorWidth := rm.NextInt()
+		doorWidth = convertEstateHeightWidthId(doorWidth)
 		features := rm.NextString()
 		popularity := rm.NextInt()
 		if err := rm.Err(); err != nil {
@@ -696,54 +759,64 @@ func searchEstates(c echo.Context) error {
 	params := make([]interface{}, 0)
 
 	if c.QueryParam("doorHeightRangeId") != "" {
-		doorHeight, err := getRange(estateSearchCondition.DoorHeight, c.QueryParam("doorHeightRangeId"))
+		_, err := getRange(estateSearchCondition.DoorHeight, c.QueryParam("doorHeightRangeId"))
 		if err != nil {
 			c.Echo().Logger.Infof("doorHeightRangeID invalid, %v : %v", c.QueryParam("doorHeightRangeId"), err)
 			return c.NoContent(http.StatusBadRequest)
 		}
+		conditions = append(conditions, "door_height = ?")
+		rangeId, _ := strconv.Atoi(c.QueryParam("doorHeightRangeId"))
+		params = append(params, rangeId)
 
-		if doorHeight.Min != -1 {
-			conditions = append(conditions, "door_height >= ?")
-			params = append(params, doorHeight.Min)
-		}
-		if doorHeight.Max != -1 {
-			conditions = append(conditions, "door_height < ?")
-			params = append(params, doorHeight.Max)
-		}
+
+		// if doorHeight.Min != -1 {
+		// 	conditions = append(conditions, "door_height >= ?")
+		// 	params = append(params, doorHeight.Min)
+		// }
+		// if doorHeight.Max != -1 {
+		// 	conditions = append(conditions, "door_height < ?")
+		// 	params = append(params, doorHeight.Max)
+		// }
 	}
 
 	if c.QueryParam("doorWidthRangeId") != "" {
-		doorWidth, err := getRange(estateSearchCondition.DoorWidth, c.QueryParam("doorWidthRangeId"))
+		_, err := getRange(estateSearchCondition.DoorWidth, c.QueryParam("doorWidthRangeId"))
 		if err != nil {
 			c.Echo().Logger.Infof("doorWidthRangeID invalid, %v : %v", c.QueryParam("doorWidthRangeId"), err)
 			return c.NoContent(http.StatusBadRequest)
 		}
+		conditions = append(conditions, "door_width = ?")
+		rangeId, _ := strconv.Atoi(c.QueryParam("doorWidthRangeId"))
+		params = append(params, rangeId)
 
-		if doorWidth.Min != -1 {
-			conditions = append(conditions, "door_width >= ?")
-			params = append(params, doorWidth.Min)
-		}
-		if doorWidth.Max != -1 {
-			conditions = append(conditions, "door_width < ?")
-			params = append(params, doorWidth.Max)
-		}
+		// if doorWidth.Min != -1 {
+		// 	conditions = append(conditions, "door_width >= ?")
+		// 	params = append(params, doorWidth.Min)
+		// }
+		// if doorWidth.Max != -1 {
+		// 	conditions = append(conditions, "door_width < ?")
+		// 	params = append(params, doorWidth.Max)
+		// }
 	}
 
 	if c.QueryParam("rentRangeId") != "" {
-		estateRent, err := getRange(estateSearchCondition.Rent, c.QueryParam("rentRangeId"))
+		_, err := getRange(estateSearchCondition.Rent, c.QueryParam("rentRangeId"))
 		if err != nil {
 			c.Echo().Logger.Infof("rentRangeID invalid, %v : %v", c.QueryParam("rentRangeId"), err)
 			return c.NoContent(http.StatusBadRequest)
 		}
+		conditions = append(conditions, "rent = ?")
+		rangeId, _ := strconv.Atoi(c.QueryParam("rentRangeId"))
+		params = append(params, rangeId)
 
-		if estateRent.Min != -1 {
-			conditions = append(conditions, "rent >= ?")
-			params = append(params, estateRent.Min)
-		}
-		if estateRent.Max != -1 {
-			conditions = append(conditions, "rent < ?")
-			params = append(params, estateRent.Max)
-		}
+		// if estateRent.Min != -1 {
+		// 	conditions = append(conditions, "rent >= ?")
+		// 	params = append(params, estateRent.Min)
+		// }
+		// if estateRent.Max != -1 {
+		// 	conditions = append(conditions, "rent < ?")
+		// 	params = append(params, estateRent.Max)
+		// }
 	}
 
 	if c.QueryParam("features") != "" {
@@ -835,9 +908,12 @@ func searchRecommendedEstateWithChair(c echo.Context) error {
 
 	var estates []Estate
 	w := chair.Width
+	w = convertChairHeightWidthDepthId(w)
 	h := chair.Height
+	h = convertChairHeightWidthDepthId(h)
 	d := chair.Depth
-	query = `SELECT * FROM estate WHERE (door_width >= ? AND door_height >= ?) OR (door_width >= ? AND door_height >= ?) OR (door_width >= ? AND door_height >= ?) OR (door_width >= ? AND door_height >= ?) OR (door_width >= ? AND door_height >= ?) OR (door_width >= ? AND door_height >= ?) ORDER BY popularity DESC, id ASC LIMIT ?`
+	d = convertChairHeightWidthDepthId(d)
+	query = `SELECT * FROM estate WHERE (door_width = ? AND door_height = ?) OR (door_width = ? AND door_height = ?) OR (door_width = ? AND door_height = ?) OR (door_width = ? AND door_height = ?) OR (door_width = ? AND door_height = ?) OR (door_width = ? AND door_height = ?) ORDER BY popularity DESC, id ASC LIMIT ?`
 	err = db.Select(&estates, query, w, h, w, d, h, w, h, d, d, w, d, h, Limit)
 	if err != nil {
 		if err == sql.ErrNoRows {
