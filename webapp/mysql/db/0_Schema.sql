@@ -8,7 +8,7 @@ CREATE TABLE isuumo.estate
 (
     id          INTEGER             NOT NULL PRIMARY KEY,
     name        VARCHAR(64)         NOT NULL,
-    description VARCHAR(4096)       NOT NULL,
+    description VARCHAR(256)       NOT NULL,
     thumbnail   VARCHAR(128)        NOT NULL,
     address     VARCHAR(128)        NOT NULL,
     latitude    DOUBLE PRECISION    NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE isuumo.chair
 (
     id          INTEGER         NOT NULL PRIMARY KEY,
     name        VARCHAR(64)     NOT NULL,
-    description VARCHAR(4096)   NOT NULL,
+    description VARCHAR(256)   NOT NULL,
     thumbnail   VARCHAR(128)    NOT NULL,
     price       INTEGER         NOT NULL,
     height      INTEGER         NOT NULL,
